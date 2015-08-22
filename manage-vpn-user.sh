@@ -21,7 +21,16 @@ add_user() {
 
 del_user() {
     local user=$1
-    sed -i "/$user/d" $CHAP_FILE
+    local n=$(grep -c "$user" $CHAP_FILE)
+    if [ $n -gt 0 ]; then
+        echo -n "Delete user [Y/N]: "
+        read option
+        if [ "$option" == "y" -o "$option" == "Y" ]; then
+            sed -i "/$user/d" $CHAP_FILE
+        fi
+    else
+        echo "No user: '$user'"
+    fi
 }
 
 case $1 in
