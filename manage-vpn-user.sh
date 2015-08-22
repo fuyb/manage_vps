@@ -12,9 +12,14 @@ cp $CHAP_FILE $CHAP_FILE.old
 
 add_user() {
     local user=$1
-    local passwd="$(< /dev/urandom tr -dC [:alnum:] | head -c 9)"
-    echo "$user pptpd $passwd *" >> $CHAP_FILE
-    tail -1 $CHAP_FILE
+    local n=$(grep -c "$user" $CHAP_FILE)
+    if [ $n -eq 0 ]; then
+        local passwd="$(< /dev/urandom tr -dC [:alnum:] | head -c 9)"
+        echo "$user pptpd $passwd *" >> $CHAP_FILE
+        tail -1 $CHAP_FILE
+    else
+        echo "User already exist!"
+    fi
 }
 
 del_user() {
@@ -44,7 +49,7 @@ update_user() {
             grep "$user" $CHAP_FILE
         fi
     else
-        echo -n "User does not exists, would you want add user [Y/N]?: "
+        echo -n "User does not exist, would you want add user [Y/N]?: "
         read option
         [ "$option" == "y" -o "$option" == "Y" ] && add_user $user
     fi
