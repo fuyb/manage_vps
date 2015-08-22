@@ -1,7 +1,7 @@
 #!/bin/sh
 
 usage() {
-    echo "usage: $0 -a -d -u <username>"
+    echo "usage: $0 -a -d -u -l <username>"
     exit 1
 }
 
@@ -55,6 +55,16 @@ update_user() {
     fi
 }
 
+list_user() {
+    local user=$1
+    local info="$(grep $user $CHAP_FILE)"
+    if [ -n "$info" ]; then
+        echo "$info"
+    else
+        echo "User does not exist!!"
+    fi
+}
+
 case $1 in
     "-a")
         add_user $2
@@ -64,6 +74,9 @@ case $1 in
         ;;
     "-u")
         update_user $2
+        ;;
+    "-l")
+        list_user $2
         ;;
     *)
         usage
