@@ -1,14 +1,15 @@
 #!/bin/sh
 
 usage() {
-    echo "usage: $0 -a -d -u -l <username>"
+    echo "usage: $0 -a|-d|-u|-l <username> [secrets file path]"
     exit 1
 }
 
 [ $# -lt 2 ] && usage
 
 CHAP_FILE="/etc/ppp/chap-secrets"
-cp $CHAP_FILE $CHAP_FILE.old
+[ $# -eq 3 ] && CHAP_FILE="$3"
+cp $CHAP_FILE{,.old} 
 
 add_user() {
     local user=$1
@@ -24,12 +25,12 @@ add_user() {
 
 del_user() {
     local user=$1
-    local n=$(grep -c "$user" $CHAP_FILE)
+    local n=$(grep -w -c "$user" $CHAP_FILE)
     if [ $n -gt 0 ]; then
         echo -n "Delete user [Y/N]?: "
         read option
         if [ "$option" == "y" -o "$option" == "Y" ]; then
-            sed -i "/$user/d" $CHAP_FILE
+            sed -i "/^$user .*$/d" $CHAP_FILE
         fi
     else
         echo "No user: '$user'"
@@ -38,7 +39,7 @@ del_user() {
 
 update_user() {
     local user=$1
-    local n=$(grep -c "$user" $CHAP_FILE)
+    local n=$(grep -w -c "$user" $CHAP_FILE)
     if [ $n -gt 0 ]; then
         echo -n "Update user [Y/N]?: "
         read option
@@ -46,7 +47,7 @@ update_user() {
             local passwd="$(< /dev/urandom tr -dC [:alnum:] | head -c 9)"
             local info="$user pptpd $passwd *"
             sed -i "s/^$user.*$/$info/g" $CHAP_FILE
-            grep "$user" $CHAP_FILE
+            grep -w "$user" $CHAP_FILE
         fi
     else
         echo -n "User does not exist, would you want add user [Y/N]?: "
@@ -57,7 +58,7 @@ update_user() {
 
 list_user() {
     local user=$1
-    local info="$(grep $user $CHAP_FILE)"
+    local info="$(grep -w "$user" $CHAP_FILE)"
     if [ -n "$info" ]; then
         echo "$info"
     else
