@@ -1,11 +1,12 @@
 #!/bin/sh
 
 usage() {
-    echo "usage: $0 -a|-d|-u|-l <username> [secrets file path]"
+    echo "usage: $0 -A -a|-d|-u|-l <username> [secrets file path]"
     exit 1
 }
 
-[ $# -lt 2 ] && usage
+[ $# -lt 1 ] && usage
+[ "$1" != "-A" ] && usage
 
 CHAP_FILE="/etc/ppp/chap-secrets"
 [ $# -eq 3 ] && CHAP_FILE="$3"
@@ -13,7 +14,7 @@ cp $CHAP_FILE{,.old}
 
 add_user() {
     local user=$1
-    local n=$(grep -c "$user" $CHAP_FILE)
+    local n=$(grep -w -c "$user" $CHAP_FILE)
     if [ $n -eq 0 ]; then
         local passwd="$(< /dev/urandom tr -dC [:alnum:] | head -c 9)"
         echo "$user pptpd $passwd *" >> $CHAP_FILE
@@ -66,6 +67,10 @@ list_user() {
     fi
 }
 
+list_all_user() {
+    cat $CHAP_FILE | egrep -v "^#"
+}
+
 case $1 in
     "-a")
         add_user $2
@@ -78,6 +83,9 @@ case $1 in
         ;;
     "-l")
         list_user $2
+        ;;
+    "-A")
+        list_all_user
         ;;
     *)
         usage
