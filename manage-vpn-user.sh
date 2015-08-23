@@ -6,7 +6,6 @@ usage() {
 }
 
 [ $# -lt 1 ] && usage
-[ "$1" != "-A" ] && usage
 
 CHAP_FILE="/etc/ppp/chap-secrets"
 [ $# -eq 3 ] && CHAP_FILE="$3"
