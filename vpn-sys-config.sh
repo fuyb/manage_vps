@@ -8,7 +8,7 @@ fi
 # iptables config
 IPTABLES="/sbin/iptables -t nat -I POSTROUTING"
 if [ $# -ne 1 ]; then
-    WAN_INTERFACE="$(ifconfig -a | head -1 | awk '{printf("%s",$1)}')"
+    WAN_INTERFACE="$(route -n | head -3 | tail -1 | awk '{print $8}')"
 else
     WAN_INTERFACE="$1"
 fi
